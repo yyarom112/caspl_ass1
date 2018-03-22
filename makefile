@@ -1,7 +1,7 @@
-all: run_file
+all: calc
 
-run_file:  stack.o
-	gcc -g -Wall -o run_file stack.o
+calc:  stack.o
+	gcc -g -Wall -o calc stack.o
 
 stack.o: stack.c
 	gcc -g -Wall -c -o stack.o stack.c
