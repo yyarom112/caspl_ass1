@@ -1,10 +1,10 @@
 all: calc
 
-calc:  stack.o
-	gcc -g -Wall -o calc stack.o
+calc:  PostFixStack.o
+	gcc -g -Wall -o calc PostFixStack.o
 
-stack.o: stack.c
-	gcc -g -Wall -c -o stack.o stack.c
+PostFixStack.o: PostFixStack.c
+	gcc -g -Wall -c -o PostFixStack.o PostFixStack.c
 
 
 clean:
