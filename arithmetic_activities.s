@@ -1,3 +1,13 @@
+SECTION .TEXT
+	GLOBAL Add_s
+	GLOBAL Subtract
+	GLOBAL Multiply
+	GLOBAL Divide
+
+
+
+
+
 Add:
                     push rbp				;backup RBP
                     move rbp, rsp			;reset RBP to current RSP
