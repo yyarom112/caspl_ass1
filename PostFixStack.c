@@ -13,6 +13,14 @@ typedef struct bignum {
 */
 #define MAX_SIZE 1024
 #define error_sign -999999
+
+//the arithmetic funcs in Assembly
+extern int Add_s(int a,int b);
+extern int Subtract(int a,int b);
+extern int Multiply(int a,int b);
+extern int Divide(int a,int b);
+
+//the types for the stack
 typedef int st_arg;
 
 typedef struct {
@@ -31,8 +39,6 @@ int is_empty(pfStack *);
 int is_full(pfStack *);
 
 st_arg peek(pfStack *);
-
-st_arg calculate(const char const *, size_t);
 
 pfStack *init_Stack();
 
@@ -78,36 +84,6 @@ st_arg pop(pfStack *pfStack1) {
     return output;
 }
 
-st_arg calc(pfStack *pfStack1) {
-    st_arg a, b, output;
-    char action;
-    //while there are more then 1 argument
-    while (pfStack1->top > 1) {
-        a = pop(pfStack1);
-        b = pop(pfStack1);
-        action = pop(pfStack1);
-        switch (action) {
-            case '*':
-                push(pfStack1, a * b);
-                break;
-            case '+':
-                push(pfStack1, a + b);
-                break;
-            case '-':
-                push(pfStack1, a - b);
-                break;
-            case '/':
-                push(pfStack1, a / b);
-                break;
-            default:
-                break;
-        }
-    }
-    output = pop(pfStack1);
-    return output;
-
-}
-
 pfStack *init_Stack() {
     pfStack *s = malloc(sizeof *s);
     s->top = -1;
@@ -120,11 +96,14 @@ pfStack *init_Stack() {
 //TODO   func because of the need to get the information from a file
 int main(int argc, char **argv) {
     int a,b,is_minus=0,num=0, need_to_insert=0;
+    //TODO- yuval-> the funcs in assembly return a value or push the value to the stack?
+    //TODO I asseumed it returns
     //char inputText[1024];
     char tmp;
     pfStack* st=init_Stack();
-    //FILE * text=fopen(argv[i],"r");
-    FILE * text=fopen("/home/weilern/CLionProjects/archiAss1/input.txt","r");
+    FILE * text=fopen(argv[0],"r");
+	//printf("%s\n",argv[1]);
+    //FILE * text=fopen("/home/weilern/CLionProjects/archiAss1/input.txt","r");
             //check  that able to read from the file
             if(text == NULL) {
                 perror("Error opening file");
@@ -223,7 +202,8 @@ int main(int argc, char **argv) {
                 //do the math
                 a=pop(st);
                 b=pop(st);
-                push(st,a+b);
+                //push(st,a+b);
+                push(st,(int) Add_s(a, b));
                 //reset for the next iteration
                 num = 0;
                 is_minus = 0;
@@ -238,7 +218,8 @@ int main(int argc, char **argv) {
                 //do the math
                 a=pop(st);
                 b=pop(st);
-                push(st,b-a);
+                //push(st,b-a);
+                push(st,(int) Subtract(b,a));
                 //reset for the next iteration
                 num = 0;
                 is_minus = 0;
@@ -253,7 +234,8 @@ int main(int argc, char **argv) {
                 //do the math
                 a=pop(st);
                 b=pop(st);
-                push(st,a*b);
+                //push(st,a*b);
+                push(st,(int) Multiply(a, b));
                 //reset for the next iteration
                 num = 0;
                 is_minus = 0;
@@ -268,7 +250,8 @@ int main(int argc, char **argv) {
                 //do the math
                 a=pop(st);
                 b=pop(st);
-                push(st,a/b);
+                //push(st,a/b);
+                push(st,(int) Divide(a, b));
                 //reset for the next iteration
                 num = 0;
                 is_minus = 0;
@@ -313,9 +296,11 @@ int main(int argc, char **argv) {
         }
         tmp = (char) fgetc(text);
     }
+/*
     printf("is the stack is empty->%i\n",is_empty(st));
     printf("%d\n",pop(st));
     printf("is the stack is empty->%i\n",is_empty(st));
+*/
     fclose(text);
     return 0;
 }
