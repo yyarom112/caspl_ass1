@@ -102,10 +102,10 @@ int main(int argc, char **argv) {
     char tmp;
     pfStack* st=init_Stack();
 	FILE * text;
-	printf("argc=%d\n",argc);	
+	//printf("argc=%d\n",argc);	
 	if (argc >= 2)
         	 text = fopen(argv[1], "r");
-	else text = fopen("*.txt", "r");
+	else text = fopen(argv[0], "r");
 
     //FILE * text=fopen(argv[0],"r");
 	//printf("%s\n",argv[1]);
