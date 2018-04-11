@@ -1,133 +1,327 @@
-// Implement a post-fix calculator using a stack.
-#include<stdio.h>
-#include<stdlib.h>
-#include<stdbool.h>
-#include<string.h>
-#define MAX_ELEMENTS 100
-#define ROGUE_VALUE -99999
+//
+// Created by weilern on 22/03/18.
+//
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+/*
+ * the addition code from the ass instructions
+typedef struct bignum {
+    long number_of_digits;
+    char *digit;
+} bignum;
+*/
+#define MAX_SIZE 1024
+#define error_sign -999999
 
-typedef int stackdata_t;
-typedef struct{
-  int top;
-  stackdata_t SA[MAX_ELEMENTS];
-} arrstack_t;
+//the arithmetic funcs in Assembly
+extern int Add_s(int a,int b);
+extern int Subtract(int a,int b);
+extern int Multiply(int a,int b);
+extern int Divide(int a,int b);
 
-arrstack_t* init_stack();
-stackdata_t evaluate_expression(const char const*, size_t);
-stackdata_t pop(arrstack_t*);
-bool push(arrstack_t*, stackdata_t);
-bool empty(arrstack_t*);
-bool full(arrstack_t*);
-void printstack(arrstack_t*);
-int gettoken(const char const*, int);
+//the types for the stack
+typedef int st_arg;
 
-int main(){
-  char buf[20];
-  char expression[20];
-  char *prompt = "Enter a postfix expression: ";
-  stackdata_t d;
-  size_t strlength;
+typedef struct {
+    int top;
+    st_arg SA[MAX_SIZE];
+} pfStack;
 
-  printf("%s", prompt);
-  fgets(buf, sizeof buf, stdin);
-  sscanf(buf, "%[a-zA-Z0-9 +-*/]s", expression);
+//TODO - all the funs that return int -> 0=false , 1=true;
+//the funcs declaration
+int push(pfStack *, st_arg);
 
-  strlength = strlen(expression);
-  d = evaluate_expression(expression, strlength);
-  printf("Expression value: %d\n", d);
+st_arg pop(pfStack *);
 
-  return 0;
-}
+int is_empty(pfStack *);
 
-arrstack_t*  init_stack(){
-  arrstack_t *s = malloc(sizeof *s);
-  s->top = -1;
-  return s;
-}
+int is_full(pfStack *);
 
-stackdata_t evaluate_expression(const char const *expression, size_t strlength){
-  printf("The expression: %s\n", expression);
-  int startpos = 0;
-  int endpos = 0;
-  char token[10];
-  arrstack_t *stack = init_stack();
-  stackdata_t n, m;
-  while(endpos < strlength){
-    endpos = gettoken(expression, startpos);
-    strncpy(token, expression + startpos, endpos - startpos);
-    //printf("Token: %s\n", token);
+st_arg peek(pfStack *);
 
-    // Push digits, pop for operations.
-    if(sscanf(token, "%d", &n)){
-      push(stack, n);
-    }
-    else{
-      m = pop(stack);
-      n = pop(stack);
-      if(strncmp(token, "+", 1) == 0){
-        push(stack, n+m);
-      }
-      else if(strncmp(token, "-", 1) == 0){
-        push(stack, n-m);
-      }
-      else if(strncmp(token, "/", 1) == 0){
-        push(stack, n/m);
-      }
-      else {
-        push(stack, n*m);
-      }
-    }
-    startpos = endpos+1;
-    memset(token, '\0', sizeof token);
-  }
-  n = pop(stack);
-  return n;
-}
+pfStack *init_Stack();
 
-int gettoken(const char const *exp_str, int i){
-  char c = exp_str[i];
-  while (c != ' ' && c != '\0'){
-    i++;
-    c = exp_str[i];
-  }
-  return i;
-}
+void clear_the_stack(pfStack *);
 
-stackdata_t pop(arrstack_t *stack){
-  stackdata_t d;
-  if(empty(stack)){
-    d = ROGUE_VALUE;
-  }
-  else{
-    d = stack->SA[stack->top];
-    stack->top--;
-  }
-  return d;
-}
-
-bool push(arrstack_t *stack, stackdata_t data){
-  if(full(stack)){
-    return false;
-  }
-  else{
+//the funcs implements
+int push(pfStack *stack, st_arg input) {
+    if (is_full(stack))
+        return 0;
     stack->top++;
-    stack->SA[stack->top] = data;
-    return true;
-  }
+    stack->SA[stack->top] = input;
+    return 1;
 }
 
-bool empty(arrstack_t *stack){
-  return stack->top == -1;
+int is_full(pfStack *pfStack1) {
+    if (pfStack1->top == MAX_SIZE - 1)
+        return 1;
+    return 0;
 }
 
-bool full(arrstack_t *stack){
-  return stack->top == (MAX_ELEMENTS-1);
+int is_empty(pfStack *pfStack1) {
+    if (pfStack1->top <= -1)
+        return 1;
+    return 0;
 }
 
-void printstack(arrstack_t *stack){
-  stackdata_t d;
-  while(!empty(stack)){
-    d = pop(stack);
-    printf("%d\n", d);
-  }
+st_arg  peek(pfStack *pfStack1){
+    return pfStack1->SA[pfStack1->top];
+}
+
+void clear_the_stack(pfStack *pfStack1){
+    while(!is_empty(pfStack1))
+        pop(pfStack1);
+}
+
+st_arg pop(pfStack *pfStack1) {
+    st_arg output;
+    if (!is_empty(pfStack1)) {
+        output = pfStack1->SA[pfStack1->top];
+        pfStack1->top--;
+    } else
+        output = error_sign;
+    return output;
+}
+
+pfStack *init_Stack() {
+    pfStack *s = malloc(sizeof *s);
+    s->top = -1;
+    return s;
+}
+
+
+
+//TODO - to yuval - I made the stack initial in the main, and not in separate
+//TODO   func because of the need to get the information from a file
+int main(int argc, char **argv) {
+    int a,b,is_minus=0,num=0, need_to_insert=0,neg=1;
+    //TODO- yuval-> the funcs in assembly return a value or push the value to the stack?
+    //TODO I asseumed it returns
+    //char inputText[1024];
+    char tmp;
+    pfStack* st=init_Stack();
+	FILE * text;
+	//printf("argc=%d\n",argc);	
+	if (argc >= 2)
+        	 text = fopen(argv[1], "r");
+	else text = fopen(argv[0], "r");
+
+    //FILE * text=fopen(argv[0],"r");
+	//printf("%s\n",argv[1]);
+    //FILE * text=fopen("/home/weilern/CLionProjects/archiAss1/input.txt","r");
+            //check  that able to read from the file
+            if(text == NULL) {
+                perror("Error opening file");
+                return(-1);
+            }
+    tmp= (char) fgetc(text);
+	
+    while(tmp!=EOF) {
+	neg=1;
+        switch (tmp) {
+            case '1':
+                num = num * 10 + 1;
+                need_to_insert = 1;
+                break;
+            case '2':
+                num = num * 10 + 2;
+                need_to_insert = 1;
+                break;
+            case '3':
+                num = num * 10 + 3;
+                need_to_insert = 1;
+                break;
+            case '4':
+                num = num * 10 + 4;
+                need_to_insert = 1;
+                break;
+            case '5':
+                num = num * 10 + 5;
+                need_to_insert = 1;
+                break;
+            case '6':
+                num = num * 10 + 6;
+                need_to_insert = 1;
+                break;
+            case '7':
+                num = num * 10 + 7;
+                need_to_insert = 1;
+                break;
+            case '8':
+                num = num * 10 + 8;
+                need_to_insert = 1;
+                break;
+            case '9':
+                num = num * 10 + 9;
+                need_to_insert = 1;
+                break;
+            case '0':
+                num = num * 10 + 0;
+                need_to_insert = 1;
+                break;
+
+                //minus case
+            case '_':
+                is_minus = 1;
+                break;
+
+                //space cases
+            case ' ':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case '\t':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case '\n':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+
+                //operator cases
+            case '+':
+                //case the the + comes right after an int example: 8+
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                //do the math
+                a=pop(st);
+                b=pop(st);
+                //push(st,a+b);
+                push(st,(int) Add_s(a, b));
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case '-':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                //do the math
+                a=pop(st);
+                b=pop(st);
+                //push(st,b-a);
+                push(st,(int) Subtract(b,a));
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case '*':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                //do the math
+                a=pop(st);
+                b=pop(st);
+                //push(st,a*b);
+                push(st,(int) Multiply(a, b));
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case '/':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                //do the math
+                a=pop(st);
+                b=pop(st);
+		//printf("a:%d b:%d\n",a,b);
+		if(a<0){
+			neg*=(-1);
+			a*=(-1);
+		}
+		if(b<0){
+			neg*=(-1);
+			b*=(-1);
+		}
+		if(b==0){
+		  printf("error division by zero\n");
+		  break;
+		}
+
+		int tmp=((int) Divide(b, a))*neg;
+                push(st,tmp);
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+
+                //special chars cases
+            case 'p':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                printf("%d\n",peek(st));
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+            case 'c':
+                if (need_to_insert == 1){
+                    if (is_minus == 1)
+                        num *= -1;
+                    push(st,num);
+                }
+                clear_the_stack(st);
+                //reset for the next iteration
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+//TODO - what does they meant when written- return underlying shell
+            case 'q':
+                exit(0);
+
+
+            default:
+                num = 0;
+                is_minus = 0;
+                need_to_insert = 0;
+                break;
+        }
+        tmp = (char) fgetc(text);
+    }
+/*
+    printf("is the stack is empty->%i\n",is_empty(st));
+    printf("%d\n",pop(st));
+    printf("is the stack is empty->%i\n",is_empty(st));
+*/
+    fclose(text);
+    return 0;
 }
