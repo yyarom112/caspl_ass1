@@ -35,11 +35,10 @@ Divide:
                     push rbp				;backup RBP
                     mov rbp, rsp			;reset RBP to current RSP
 			xor rdx, rdx
-			mov rax, rsi
-			mov rcx, rdi
-			idiv qword rcx
-                    ;div rdi, rsi                       ;execute--for bignum need to change
-                    ;mov rax, rdi			;put return value into rax
+			mov rax, rdi
+			mov rcx, rsi
+			idiv rcx
+		
                     mov rsp, rbp			;move RBP to RSP
                     pop rbp				;restore RBP
-                    RET	 
+                    RET		 
